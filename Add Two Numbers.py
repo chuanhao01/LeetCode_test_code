@@ -10,7 +10,7 @@ class Solution:
         self.l1_l = []
         temp = l1
         while (self.l1Check):
-            self.l1_l.append(str(temp.val))
+            self.l1_l.append(temp.val)
             if (temp.next == None):
                 self.l1Check = False
             else:
@@ -19,26 +19,38 @@ class Solution:
         self.l2_l = []
         temp = l2
         while(self.l2Check):
-            self.l2_l.append(str(temp.val))
+            self.l2_l.append(temp.val)
             if (temp.next == None):
                 self.l2Check = False
             else:
                 temp = temp.next
-        self.l1_i = int("".join(self.l1_l))
-        self.l2_i = int("".join(self.l2_l))
-        self.rtr = self.l1_i + self.l2_i
+        temp = []
+        for i in range(len(self.l1_l)):
+            temp.append(str(self.l1_l[len(self.l1_l) - 1 - i]))
+        self.l1_l = temp
+        temp = []
+        for i in range(len(self.l2_l)):
+            temp.append(str(self.l2_l[len(self.l2_l) - 1 - i]))
+        self.l2_l = temp
+        self.l1_l = int("".join(self.l1_l))
+        self.l2_l = int("".join(self.l2_l))
+        self.rtr = self.l1_l + self.l2_l
         self.rtr = str(self.rtr)
-        self.temp_l = []
-        for i in range(len(self.rtr)):
-            if i+1 < len(self.rtr) - 1:
-                if i == 0:
-                    a = ListNode(int(self.rtr[i]))
-                else:
-                    b = ListNode(int(self.rtr[i]))
-                    b.next = a
-                    a = b
-                    if i == len(self.rtr) - 1:
-                        return b
+        a = self.getLinkedList(self.rtr)
+        return a
+
+    def getLinkedList(self, item):
+        for i in range(len(item)):
+            if i == 0:
+                self.temp = ListNode(int(item[i]))
+            else:
+                a = ListNode(int(item[i]))
+                a.next = self.temp
+                self.temp = a
+        return self.temp
+
+
+
 
 
 
