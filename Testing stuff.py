@@ -1,4 +1,3 @@
-a = ["i", "i", "i"]
-a = set(a)
+a = [1,1,2,3,4,4,1]
+a.sort()
 print(a)
-print(len(a))
