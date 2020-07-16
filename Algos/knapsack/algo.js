@@ -1,6 +1,6 @@
 const algo = {
     recur(weights, values, maxWeight){
-        var boo = [];
+        let boo = [];
         for(let i of values){
             boo.push(0);
         }
@@ -41,7 +41,9 @@ const algo = {
                 return Math.max(temp1, temp2);
             }
         }
-        return re(weights.length - 1, maxWeight);
+        let fv = re(weights.length - 1, maxWeight);
+        console.log(boo);
+        return fv;
     }
 };
 
