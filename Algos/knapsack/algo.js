@@ -77,6 +77,39 @@ const algo = {
             return result;
         }
         return re(weights.length, maxWeight);
+    },
+    dpBottom(weights, values, maxWeight){
+        let dp = [];
+        for(let i of weights){
+            let arr = [];
+            for(let j=0; j<maxWeight+1; j++){
+                arr.push(-1);
+            }
+            dp.push(arr);
+        }
+        for(let i=0; i<weights.length; i++){
+            for(let j=0; j<maxWeight+1; j++){
+                if(i===0){
+                    if(j<weights[i]){
+                        dp[i][j] = 0;
+                    }
+                    else{
+                        dp[i][j] = values[i];
+                    }
+                }
+                else{
+                    if(j < weights[i]){
+                        // If we cannot take the current item
+                        dp[i][j] = dp[i-1][j];
+                    }
+                    else{
+                        let takeItem = values[i] + dp[i-1][j-weights[i]];
+                        dp[i][j] = Math.max(takeItem, dp[i-1][j]);
+                    }
+                }
+            }
+        }
+        return dp[weights.length-1][maxWeight];
     }
 };
 
