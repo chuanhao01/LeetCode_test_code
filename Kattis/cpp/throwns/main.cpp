@@ -10,24 +10,38 @@ int main(){
     std::stack<int> coms;
     bool undo = false;
     for(int i=0; i<k; i++){
-        int p;
-        std::cin >> p;
-        if(!std::cin){
+        std::string com;
+        std::cin >> com;
+        if(!std::isdigit(com)){
             // Is undo
             undo = true;
             i--;
         }
         else{
+            int p = std::stoi(com);
             if(undo){
-                // p is m
-                for(int j=0; j<p; j++){
-                    coms.pop();
-                }
-            }
-            else{
-                coms.push(p);
+                
             }
         }
+        // int p;
+        // std::cin >> p;
+        // if(!std::cin){
+        //     // Is undo
+        //     undo = true;
+        //     std::cin.clear();
+        // }
+        // else{
+        //     if(undo){
+        //         // p is m
+        //         for(int j=0; j<p; j++){
+        //             coms.pop();
+        //         }
+        //         undo = false;
+        //     }
+        //     else{
+        //         coms.push(p);
+        //     }
+        // }
     }
     std::cout << std::endl;
     int sum = 0;
