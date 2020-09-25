@@ -10,49 +10,35 @@ int main(){
     std::stack<int> coms;
     bool undo = false;
     for(int i=0; i<k; i++){
-        std::string com;
-        std::cin >> com;
-        if(!std::isdigit(com)){
-            // Is undo
+        int p;
+        std::string temp;
+        if(! (std::cin >> p)){
+            // Err undo
+            std::cin.clear();
+            std::cin >> temp;
             undo = true;
             i--;
         }
         else{
-            int p = std::stoi(com);
             if(undo){
-                
+                // p is m
+                for(int j=0; j<p; j++){
+                    coms.pop();
+                }
+                undo = false;
+            }
+            else{
+                coms.push(p);
             }
         }
-        // int p;
-        // std::cin >> p;
-        // if(!std::cin){
-        //     // Is undo
-        //     undo = true;
-        //     std::cin.clear();
-        // }
-        // else{
-        //     if(undo){
-        //         // p is m
-        //         for(int j=0; j<p; j++){
-        //             coms.pop();
-        //         }
-        //         undo = false;
-        //     }
-        //     else{
-        //         coms.push(p);
-        //     }
-        // }
     }
-    std::cout << std::endl;
     int sum = 0;
     while(coms.size() > 0){
-        std::cout << coms.top();
-        std::cout << std::endl;
-        sum += coms.top();
+        if((coms.top() % n) != 0) sum += coms.top();
         coms.pop();
     }
-    std::cout << std::endl;
-    std::cout << sum % n;
+    if(sum < 0) std::cout << n + (sum % n);
+    else std::cout << sum % n;
     return 0;
 }
 
