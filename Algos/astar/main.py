@@ -1,3 +1,5 @@
+import queue
+
 class Node:
     '''
     The struct to represent a node in the graph
@@ -33,6 +35,10 @@ class Node:
         '''
         self.edges.append((target_node, weight))
     
+    def get_dist(self, target_node):
+        # Return dist between node and target node
+        pass
+    
 class Graph:
     def __init__(self, nodes_repr=None, graph_repr=None):
         '''
@@ -55,11 +61,33 @@ class AStar:
     def __init__(self, start_key, end_key):
         self.start_key = start_key
         self.end_key = end_key
-        self.open_nodes = {}
+        self.open_queue = queue.PriorityQueue()
+        self.open_scores = {}
         self.closed_nodes = {}
     
     def run(self, graph):
-        self.start_node = graph.get_node(self.start_key)
+        done = False
+        self.open_queue.put((0, self.start_key, None))
+        while not done:
+            # Pops the top node in the open nodes
+            cur_weight, cur_key, _ = self.open_queue.get()
+            cur_node = graph.get_node()
+            # For each edge from the node
+            for edge in cur_node.edges:
+                target_node, weight = edge
+                if target_node.key not in self.open_scores:
+                    # Check if node is in the open list
+                        self.open_scores[target_node.key] = [weight]
+                    # F G T F for AStar
+                    # F T F for normal algo
+                    self.open_queue.put((weight, target_node.key, cur_node.key))
+                else:
+                    # Node is already in the list
+                    # Check if this path is shorter
+
+
+
+
 
 
 
