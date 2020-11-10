@@ -157,7 +157,7 @@ if __name__ == "__main__":
         'D': [('end', 2)],
     }
     graph = Graph(nodes_repr=nodes_repr, graph_repr=graph_repr)
-    a = AStar('start', 'end')
+    a = AStar('start', 'D')
     res = a.run(graph)
     print(res)
 
