@@ -1,4 +1,5 @@
 import queue
+import math
 
 class Node:
     '''
@@ -66,31 +67,64 @@ class AStar:
         self.closed_nodes = {}
     
     def run(self, graph):
-        done = False
-        self.open_queue.put((0, self.start_key, None))
-        while not done:
-            # Pops the top node in the open nodes
-            cur_weight, cur_key, _ = self.open_queue.get()
-            cur_node = graph.get_node()
-            # For each edge from the node
-            for edge in cur_node.edges:
-                target_node, weight = edge
-                if target_node.key not in self.open_scores:
-                    # Check if node is in the open list
-                        self.open_scores[target_node.key] = [weight]
-                    # F G T F for AStar
-                    # F T F for normal algo
-                    self.open_queue.put((weight, target_node.key, cur_node.key))
-                else:
-                    # Node is already in the list
-                    # Check if this path is shorter
+        # Place current node into open queue
+        self.open_queue.put((0, self.start_key))
+        self.open_scores[self.start_key] = {
+            'last': None
+        }
+        while True:
+            # Checking if there are no more paths
+            if self.open_queue.qsize() == 0:
+                # Retuning that no path are available
+                # Let upstream handle the exception`
+                return None
 
+            # Taking the weight and node from the queue
+            # This will always be smallest, because of prio queue
+            # Since we are checking if this value has been checked before, the larger values will be ignored
+            cur_weight, cur_node_key = self.open_queue.get()
 
+            if cur_node_key == self.end_key:
+                # If we are taking out the end node key
+                # We have found the shortest path
+                found_path = []
+                prev_node_key = cur_node_key
+                while prev_node_key is not None:
+                    found_path.append(prev_node_key)
+                    prev_node_key = self.open_scores[prev_node_key]['last']
+                return found_path
 
-
-
-
-
+            if cur_node_key not in self.closed_nodes:
+                # Node is not closed
+                # Grab the node
+                cur_node = graph.get_node(cur_node_key)
+                # For each connection
+                for edge in cur_node.edges:
+                    target_node, target_weight = edge
+                    target_node_key = target_node.key
+                    g = cur_weight + target_weight
+                    h = math.sqrt((cur_node.x - target_node.x)**2 + (cur_node.y - target_node.y)**2)
+                    f = g + h
+                    if target_node_key not in self.open_scores:
+                        # Does not have a score
+                        self.open_scores[target_node_key] = {
+                            'f': f,
+                            'g': g,
+                            'h': h,
+                            'last': cur_node_key
+                        }
+                        self.open_queue.put((f, target_node_key))
+                    else:
+                        # There is a prev cost
+                        if f < self.open_scores[target_node_key]['f']:
+                            # Current cost is smaller
+                            self.open_scores[target_node_key] = {
+                                'f': f,
+                                'g': g,
+                                'h': h,
+                                'last': cur_node_key
+                            }
+                            self.open_queue.put((f, target_node_key))
 
 
 if __name__ == "__main__":
@@ -123,4 +157,7 @@ if __name__ == "__main__":
         'D': [('end', 2)],
     }
     graph = Graph(nodes_repr=nodes_repr, graph_repr=graph_repr)
+    a = AStar('start', 'end')
+    res = a.run(graph)
+    print(res)
 
