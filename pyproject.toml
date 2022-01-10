@@ -15,3 +15,21 @@ mypy = "^0.920"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.messages_control]
+
+max-line-length = 100
+disable = [
+  "missing-docstring",
+  "unused-argument",
+  "no-value-for-parameter",
+  "no-member",
+  "no-else-return",
+  "bad-whitespace",
+  "bad-continuation",
+  "line-too-long",
+  "fixme",
+  "protected-access",
+  "too-few-public-methods",
+  "invalid-name"
+]
