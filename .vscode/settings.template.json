@@ -1,0 +1,44 @@
+{
+  // --- VSCode Related Settings ---
+  // Editor
+  "editor.tabSize": 4,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // --- Language Specific Settings ---
+  // --- Python
+  "python.linting.enabled": true,
+  "python.pythonPath": ".venv/bin/python",
+  "python.linting.maxNumberOfProblems": 500,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "editor.rulers": [100]
+  },
+  // Pylint
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintPath": ".venv/bin/pylint",
+  "python.linting.pylintCategorySeverity.convention": "Warning",
+  "python.linting.pylintCategorySeverity.refactor": "Warning",
+  // Mypy
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyPath": ".venv/bin/mypy",
+  "python.linting.mypyArgs": ["--config-file=${workspaceFolder}/mypy.ini"],
+  // Black
+  "python.formatting.provider": "black",
+  // --- Markdown
+  "[markdown]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.markdownlint": true
+    }
+  },
+  // --- Extensions Related Settings ---
+  // Markdownlint
+  "markdownlint.config": {
+    "MD007": { "indent": 4 },
+    "MD024": false,
+    "MD025": false
+  }
+}
