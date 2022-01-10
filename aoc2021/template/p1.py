@@ -1,12 +1,11 @@
 import typing as t
 
 
-def solve(data: str) -> t.Any:
-    pass
+def solve(data: t.Any) -> t.Any:
+    return
 
 
-def read_data(data_path: str = "data.txt") -> str:
-    data = None
+def read_data(data_path: str = "data.txt") -> t.Any:
     with open(data_path, "r", encoding="utf-8") as f:
         data = f.read()
     return data
