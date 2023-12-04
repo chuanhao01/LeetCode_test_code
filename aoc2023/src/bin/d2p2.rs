@@ -5,7 +5,7 @@ use std::{
 };
 
 fn main() -> Result<()> {
-    let mut file_input = File::open("inputs/q2")?;
+    let mut file_input = File::open("inputs/d2")?;
     let mut input = String::new();
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;

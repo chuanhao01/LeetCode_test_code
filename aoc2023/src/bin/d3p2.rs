@@ -100,7 +100,7 @@ fn check_around_no(map: Vec<Vec<String>>, no: No)-> Option<i64>{
 }
 
 fn main() -> Result<()> {
-    let mut file_input = File::open("inputs/q3")?;
+    let mut file_input = File::open("inputs/d3")?;
     let mut input = String::new();
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;
