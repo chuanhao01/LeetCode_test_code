@@ -35,7 +35,7 @@ impl PartialEq for No {
 
 fn parseNos(map: &str) -> Vec<No> {
     let mut nos = Vec::new();
-    for (y, l) in map.split("\r\n").enumerate() {
+    for (y, l) in map.split('\n').enumerate() {
         let mut currently_digit = false;
         let mut start = 0;
         let mut body = String::new();
@@ -105,7 +105,7 @@ fn main() -> Result<()> {
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;
 
-    let map = input.split("\r\n").map(|l| {l.chars().map(|c| c.to_string()).collect::<Vec<_>>()}).collect::<Vec<_>>();
+    let map = input.split('\n').map(|l| {l.chars().map(|c| c.to_string()).collect::<Vec<_>>()}).collect::<Vec<_>>();
 
     let nos = parseNos(&input);
     for (y, l) in map.iter().enumerate(){
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_parse_nos() {
-        let a = parseNos("467..114..112\r\n...*......22.");
+        let a = parseNos("467..114..112\n...*......22.");
         assert_eq!(
             No {
                 body: 467,

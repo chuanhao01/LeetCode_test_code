@@ -9,7 +9,7 @@ fn main() -> Result<()> {
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;
 
-    for line in input.split("\n") {
+    for line in input.split('\n') {
         let line = line.split(": ").collect::<Vec<_>>()[1];
         let winning_nos = line.split(" | ").collect::<Vec<_>>()[0];
         let nos = line.split(" | ").collect::<Vec<_>>()[1];

@@ -12,7 +12,7 @@ fn main() -> Result<()> {
 
     let possible = HashMap::from([("red", 12), ("green", 13), ("blue", 14)]);
 
-    for l in input.split("\r\n") {
+    for l in input.split('\n') {
         let l = l.split(": ").collect::<Vec<&str>>();
         let id = l.first().unwrap();
         let games = l.last().unwrap();
