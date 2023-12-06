@@ -3,16 +3,17 @@ use std::{
     io::{Read, Result},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Range {
     start: i64,
     length: i64,
 }
 
-fn ranges_consume_mapper(ranges: Vec<Range>, mapper: Mapper) -> Vec<Range> {
+fn ranges_consume_mapper(ranges: Vec<Range>, mapper: &Mapper) -> Vec<Range> {
     let mut converted_ranges: Vec<Range> = Vec::new();
     let mut queue_ranges = ranges;
-    for map in mapper.maps {
+    for map in &mapper.maps {
+        // println!("{:?}", queue_ranges);
         let mut next_check_convert_ranges: Vec<Range> = Vec::new();
         for range in &queue_ranges {
             // 1st case larger
@@ -25,9 +26,45 @@ fn ranges_consume_mapper(ranges: Vec<Range>, mapper: Mapper) -> Vec<Range> {
                 next_check_convert_ranges.push(*range);
                 continue;
             }
+
+            let mut left = range.start;
+            let right = range.start + range.length;
+            // println!("l: {:?}, r: {:?}", left, right);
+            if left < map.source {
+                next_check_convert_ranges.push(Range {
+                    start: left,
+                    length: map.source - left,
+                });
+                left = map.source;
+            }
+
+            if left == right {
+                converted_ranges.push(Range {
+                    start: map.dest,
+                    length: 1,
+                });
+                continue;
+            }
+
+            if right <= map.source + map.range {
+                converted_ranges.push(Range {
+                    start: left - map.source + map.dest,
+                    length: right - left,
+                });
+                continue;
+            }
+            converted_ranges.push(Range {
+                start: map.dest,
+                length: map.range,
+            });
+            next_check_convert_ranges.push(Range {
+                start: map.source + map.range,
+                length: right - map.source - map.range,
+            });
         }
         queue_ranges = next_check_convert_ranges;
     }
+    converted_ranges.append(&mut queue_ranges);
     converted_ranges
 }
 
@@ -87,6 +124,7 @@ fn generate_mappers(mapper_inputs: &[&str]) -> Vec<Mapper> {
 
 fn main() -> Result<()> {
     let mut file_input = File::open("inputs/d5")?;
+    // let mut file_input = File::open("inputs/temp")?;
     let mut input = String::new();
     file_input.read_to_string(&mut input)?;
 
@@ -98,15 +136,50 @@ fn main() -> Result<()> {
     let mappers = generate_mappers(&input[1..input.len()]);
 
     let mut sum = 0;
-    sum = seeds
-        .iter()
-        .map(|seed| {
-            mappers
-                .iter()
-                .fold(*seed, |acc, mapper| mapper.convert(acc))
-        })
-        .min()
-        .unwrap();
+    let mut inital_seeds: Vec<Range> = Vec::new();
+    for i in (0..seeds.len()).step_by(2) {
+        let start = seeds[i];
+        let length = seeds[i + 1];
+        inital_seeds.push(Range { start, length });
+    }
+    // println!("{:?}", inital_seeds);
+    // println!("{:?}", mappers);
+    let final_range = mappers.iter().fold(inital_seeds, |acc, mapper| {
+        let new_range = ranges_consume_mapper(acc, mapper);
+        // println!("{:?}", new_range);
+        new_range
+    });
+    // println!("{:?}", final_range);
+    sum = final_range.iter().map(|range| {range.start}).min().unwrap();
     println!("sum: {}", sum);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ranges_consume_mapper() {
+        let inital_seed = vec![Range {
+            start: 1,
+            length: 10,
+        }];
+        let mapper = Mapper {
+            maps: vec![
+                Map {
+                    dest: 100,
+                    source: 2,
+                    range: 3,
+                },
+                Map {
+                    dest: 103,
+                    source: 5,
+                    range: 2,
+                },
+            ],
+        };
+        let out = ranges_consume_mapper(inital_seed, &mapper);
+        println!("{:?}", out);
+    }
 }
