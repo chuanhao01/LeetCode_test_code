@@ -19,7 +19,7 @@ impl Hand {
         Self {
             cards: cards.clone(),
             bid,
-            _type: Type::from(&cards),
+            _type: Type::new(&cards),
         }
     }
 }
@@ -68,6 +68,48 @@ enum Type {
     FiveOfAKind,
 }
 impl Type {
+    pub fn new(cards: &Vec<Card>) -> Self {
+        let joker_cards = cards.iter().filter(|card| **card == Card::J).count();
+        if joker_cards > 0 {
+            let mut other_card_type = Self::from(
+                &cards
+                    .clone()
+                    .into_iter()
+                    .filter(|card| *card != Card::J)
+                    .collect::<Vec<_>>(),
+            );
+            // println!("cards: {:?}", cards);
+            // println!(
+            //     "filter_cards: {:?}",
+            //     &cards
+            //         .clone()
+            //         .into_iter()
+            //         .filter(|card| *card != Card::J)
+            //         .collect::<Vec<_>>(),
+            // );
+            // println!("joker_cards: {}", joker_cards);
+            // println!("other_card_type: {:?}", other_card_type);
+            for _ in 0..joker_cards {
+                other_card_type = Self::joker_upgrade(other_card_type);
+            }
+            println!("new_card_type: {:?}", other_card_type);
+            other_card_type
+        } else {
+            Self::from(cards)
+        }
+    }
+    fn joker_upgrade(current_type: Type) -> Type {
+        match current_type {
+            Self::HighCard => Self::OnePair,
+            Self::OnePair => Self::ThreeOfAKind,
+            Self::ThreeOfAKind => Self::FourOfAKind,
+            Self::FourOfAKind => Self::FiveOfAKind,
+            Self::TwoPair => Self::FullHouse,
+            Self::FullHouse => Self::FourOfAKind,
+            // Solve bug with 5 jokers
+            Self::FiveOfAKind => Self::FiveOfAKind,
+        }
+    }
     pub fn from(cards: &Vec<Card>) -> Self {
         let mut card_counts: HashMap<Card, i64> = HashMap::new();
         for card in cards {
@@ -117,6 +159,7 @@ impl Type {
 
 #[derive(PartialEq, PartialOrd, Ord, Clone, Copy, Eq, Hash, Debug)]
 enum Card {
+    J,
     Two,
     Three,
     Four,
@@ -126,7 +169,6 @@ enum Card {
     Eight,
     Nine,
     T,
-    J,
     Q,
     K,
     A,
@@ -188,7 +230,7 @@ fn main() -> Result<()> {
         })
         .collect::<Vec<_>>();
     hands.sort();
-    // println!("{:?}", hands);
+    println!("{:?}", hands);
 
     let mut sum = hands
         .iter()
