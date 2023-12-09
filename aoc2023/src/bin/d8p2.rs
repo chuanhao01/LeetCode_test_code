@@ -6,11 +6,19 @@ use std::{
 };
 
 use itertools::izip;
+use num::Integer;
 
 #[derive(Debug)]
 struct Next {
     left: String,
     right: String,
+}
+
+#[derive(Debug)]
+struct Cycle {
+    body: Vec<String>,
+    current: String,
+    found: i64,
 }
 
 fn main() -> Result<()> {
@@ -25,11 +33,11 @@ fn main() -> Result<()> {
     // println!("{:?}", seq);
     let raw_mappings = input[1].split('\n');
     let mut map: HashMap<String, Next> = HashMap::new();
-    let mut current: Vec<String> =  Vec::new();
+    let mut current: Vec<String> = Vec::new();
     for raw_mapping in raw_mappings {
         let mapping = raw_mapping.split(" = ").collect::<Vec<_>>();
         let from = mapping[0];
-        if from.ends_with('A'){
+        if from.ends_with('A') {
             current.push(from.to_string());
         }
         let raw_locations = mapping[1].replace(['(', ')'], "");
@@ -45,20 +53,75 @@ fn main() -> Result<()> {
     }
     // println!("{:?}, {}", current, current.iter().all(|location| location.ends_with('Z')));
     let mut index = 0;
-    while !current.iter().all(|location| location.ends_with('Z')){
-        current = current.iter().map(|location|{
-            let direction = &seq[index];
-            let mapping = &map[location];
-            if direction == "L" {
-                mapping.left.clone()
-            } else {
-                mapping.right.clone()
+    let mut cycles = current
+        .iter()
+        .map(|location| Cycle {
+            body: Vec::from([location.clone()]),
+            current: location.clone(),
+            found: 0,
+        })
+        .collect::<Vec<_>>();
+    while !cycles.iter().all(|cycle| cycle.found >= 3) {
+        cycles.iter_mut().for_each(|cycle| {
+            if cycle.found < 3 {
+                let direction = &seq[index];
+                let mapping = &map[&cycle.current];
+                let next = if direction == "L" {
+                    mapping.left.clone()
+                } else {
+                    mapping.right.clone()
+                };
+                cycle.body.push(next.clone());
+                cycle.current = next.clone();
+                if next.ends_with('Z') {
+                    cycle.found += 1;
+                }
             }
-        }).collect::<Vec<_>>();
-        // println!("{:?}, index: {}", current, index);
+        });
         index = if index < seq.len() - 1 { index + 1 } else { 0 };
-        sum += 1;
+        // sum += 1;
     }
+    let counts = cycles
+        .iter()
+        .map(|cycle| {
+            // println!("{:?}", cycle);
+            let mut counts = Vec::new();
+            let mut l = 0;
+            for location in &cycle.body {
+                if location.ends_with('Z') {
+                    counts.push(l);
+                    l = 1;
+                }
+                l += 1;
+            }
+            println!("{:?}", counts);
+            counts[0] as i64
+        })
+        .collect::<Vec<_>>();
+    // Used an online calculator at the end
+    // Not that great, but because the period of cycles the same, get lcm at the end
+    println!("{:?}", counts);
+
+    // sum = counts;
+    // println!("{:?}", cycles);
+
+    // while !current.iter().all(|location| location.ends_with('Z')) {
+    //     current = current
+    //         .iter()
+    //         .map(|location| {
+    //             let direction = &seq[index];
+    //             let mapping = &map[location];
+    //             if direction == "L" {
+    //                 mapping.left.clone()
+    //             } else {
+    //                 mapping.right.clone()
+    //             }
+    //         })
+    //         .collect::<Vec<_>>();
+    //     // println!("{:?}, index: {}", current, index);
+    //     index = if index < seq.len() - 1 { index + 1 } else { 0 };
+    //     sum += 1;
+    // }
 
     println!("sum: {}", sum);
     Ok(())
