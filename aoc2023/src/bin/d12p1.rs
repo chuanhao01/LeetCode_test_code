@@ -36,7 +36,7 @@ fn count_poss(spring_types: &[SpringType], information: &[i64]) -> i64 {
             1
         };
     }
-    if spring_types.len() < information[0] as usize {
+    if spring_types.len() < information.iter().sum::<i64>() as usize {
         return 0;
     }
     if information.len() == 1 && information[0] as usize == spring_types.len() {
@@ -54,60 +54,22 @@ fn count_poss(spring_types: &[SpringType], information: &[i64]) -> i64 {
         c += count_poss(&spring_types[1..spring_types.len()], information);
     }
     if let SpringType::Damaged | SpringType::Unknown = spring_types[0] {
-        c += if spring_types.len() > information[0] as usize {
-            match spring_types[information[0] as usize] {
-                SpringType::Unknown | SpringType::Working => count_poss(
-                    &spring_types[information[0] as usize + 1..spring_types.len()],
-                    &information[1..information.len()],
-                ),
-                SpringType::Damaged => 0,
-            }
+        c += if let SpringType::Damaged = spring_types[information[0] as usize] {
+            0
+        } else if spring_types[..information[0] as usize]
+            .iter()
+            .any(|spring_type| matches!(spring_type, SpringType::Working))
+        {
+            0
         } else {
             count_poss(
-                &spring_types[information[0] as usize..spring_types.len()],
+                &spring_types[information[0] as usize + 1..spring_types.len()],
                 &information[1..information.len()],
             )
         }
     }
+    // println!("{}", c);
     c
-    // match spring_types[0] {
-    //     SpringType::Working => count_poss(&spring_types[1..spring_types.len()], information),
-    //     SpringType::Damaged => {
-    //         if spring_types.len() > information[0] as usize {
-    //             match spring_types[information[0] as usize] {
-    //                 SpringType::Unknown | SpringType::Working => count_poss(
-    //                     &spring_types[information[0] as usize + 1..spring_types.len()],
-    //                     &information[1..information.len()],
-    //                 ),
-    //                 SpringType::Damaged => 0,
-    //             }
-    //         } else {
-    //             count_poss(
-    //                 &spring_types[information[0] as usize..spring_types.len()],
-    //                 &information[1..information.len()],
-    //             )
-    //         }
-    //     }
-    //     SpringType::Unknown => {
-    //         let working = count_poss(&spring_types[1..spring_types.len()], information);
-    //         let damaged = if spring_types.len() > information[0] as usize {
-    //             match spring_types[information[0] as usize] {
-    //                 SpringType::Unknown | SpringType::Working => count_poss(
-    //                     &spring_types[information[0] as usize + 1..spring_types.len()],
-    //                     &information[1..information.len()],
-    //                 ),
-    //                 SpringType::Damaged => 0,
-    //             }
-    //         } else {
-    //             count_poss(
-    //                 &spring_types[information[0] as usize..spring_types.len()],
-    //                 &information[1..information.len()],
-    //             )
-    //         };
-    //         // println!("{}", working + damaged);
-    //         working + damaged
-    //     }
-    // }
 }
 
 fn main() -> Result<()> {
@@ -132,7 +94,6 @@ fn main() -> Result<()> {
         })
         .collect::<Vec<_>>();
     sum = rows.iter().fold(0, |acc, (spring_types, information)| {
-        println!("{}", count_poss(spring_types, information));
         acc + count_poss(spring_types, information)
     });
 
@@ -147,7 +108,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_count_pos() {
-        let spring_types = "???.###."
+        let spring_types = "???.###"
             .chars()
             .map(|c| SpringType::new(&c.to_string()))
             .collect::<Vec<_>>();
