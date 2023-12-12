@@ -56,10 +56,7 @@ fn count_poss(spring_types: &[SpringType], information: &[i64]) -> i64 {
     if let SpringType::Damaged | SpringType::Unknown = spring_types[0] {
         c += if let SpringType::Damaged = spring_types[information[0] as usize] {
             0
-        } else if spring_types[..information[0] as usize]
-            .iter()
-            .any(|spring_type| matches!(spring_type, SpringType::Working))
-        {
+        } else if count_poss(&spring_types[..information[0] as usize], &[information[0]]) == 0 {
             0
         } else {
             count_poss(
