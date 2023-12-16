@@ -104,55 +104,88 @@ impl Map {
         Self { body }
     }
     fn traverse_map(&mut self) -> usize {
-        let mut taken: HashSet<(i64, i64)> = HashSet::new();
-        let mut paths: HashSet<(Direction, (i64, i64))> = HashSet::new();
-        let mut path_id = 0;
-        let mut queue: Vec<(Direction, (i64, i64), i64)> =
-            vec![(Direction::Right, (0, 0), path_id)];
-        while !queue.is_empty() {
-            let item = queue.remove(0);
-            let (direction, map_location, current_path_id) = item;
-            let max_y = self.body.len() as i64;
-            let max_x = self.body[0].len() as i64;
-            let (y, x) = map_location;
-            if y < 0 || y >= max_y || x < 0 || x >= max_x {
-                continue;
-            }
-            if paths.get(&(direction.clone(), map_location)).is_some() {
-                continue;
-            }
-            taken.insert(map_location);
-            paths.insert((direction.clone(), map_location));
-            match &self.body[y as usize][x as usize] {
-                Objects::Empty => queue.push((
-                    direction.clone(),
-                    direction.get_new_index(map_location),
-                    current_path_id,
-                )),
-                Objects::Mirror(mirror) => {
-                    let new_direction = mirror.reflect_direction(direction);
-                    queue.push((
-                        new_direction.clone(),
-                        new_direction.get_new_index(map_location),
-                        current_path_id,
-                    ));
+        let max_y = self.body.len() as i64;
+        let max_x = self.body[0].len() as i64;
+        let mut en = 0;
+        let mut possible_starts: Vec<(Direction, (i64, i64))> = Vec::new();
+        possible_starts.append(
+            &mut (0..max_x)
+                .map(|x| (Direction::Down, (0, x)))
+                .collect::<Vec<_>>(),
+        );
+        possible_starts.append(
+            &mut (0..max_x)
+                .map(|x| (Direction::Up, (max_y - 1, x)))
+                .collect::<Vec<_>>(),
+        );
+        possible_starts.append(
+            &mut (0..max_y)
+                .map(|y| (Direction::Right, (y, 0)))
+                .collect::<Vec<_>>(),
+        );
+        possible_starts.append(
+            &mut (0..max_y)
+                .map(|y| (Direction::Left, (y, max_x - 1)))
+                .collect::<Vec<_>>(),
+        );
+        for possible_start in possible_starts {
+            let mut taken: HashSet<(i64, i64)> = HashSet::new();
+            let mut paths: HashSet<(Direction, (i64, i64))> = HashSet::new();
+            let mut path_id = 0;
+            let mut queue: Vec<(Direction, (i64, i64), i64)> =
+                vec![(possible_start.0, possible_start.1, path_id)];
+            while !queue.is_empty() {
+                let item = queue.remove(0);
+                let (direction, map_location, current_path_id) = item;
+                let (y, x) = map_location;
+                if y < 0 || y >= max_y || x < 0 || x >= max_x {
+                    continue;
                 }
-                Objects::Splitter(splitter) => {
-                    if let Some((dir1, dir2)) = splitter.split_direction(direction.clone()) {
-                        queue.push((dir1.clone(), dir1.get_new_index(map_location), path_id + 1));
-                        queue.push((dir2.clone(), dir2.get_new_index(map_location), path_id + 2));
-                        path_id += 2;
-                    } else {
+                if paths.get(&(direction.clone(), map_location)).is_some() {
+                    continue;
+                }
+                taken.insert(map_location);
+                paths.insert((direction.clone(), map_location));
+                match &self.body[y as usize][x as usize] {
+                    Objects::Empty => queue.push((
+                        direction.clone(),
+                        direction.get_new_index(map_location),
+                        current_path_id,
+                    )),
+                    Objects::Mirror(mirror) => {
+                        let new_direction = mirror.reflect_direction(direction);
                         queue.push((
-                            direction.clone(),
-                            direction.get_new_index(map_location),
+                            new_direction.clone(),
+                            new_direction.get_new_index(map_location),
                             current_path_id,
-                        ))
+                        ));
+                    }
+                    Objects::Splitter(splitter) => {
+                        if let Some((dir1, dir2)) = splitter.split_direction(direction.clone()) {
+                            queue.push((
+                                dir1.clone(),
+                                dir1.get_new_index(map_location),
+                                path_id + 1,
+                            ));
+                            queue.push((
+                                dir2.clone(),
+                                dir2.get_new_index(map_location),
+                                path_id + 2,
+                            ));
+                            path_id += 2;
+                        } else {
+                            queue.push((
+                                direction.clone(),
+                                direction.get_new_index(map_location),
+                                current_path_id,
+                            ))
+                        }
                     }
                 }
             }
+            en = en.max(taken.len());
         }
-        taken.len()
+        en
     }
 }
 

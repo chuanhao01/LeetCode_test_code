@@ -14,10 +14,11 @@ struct Lens {
 }
 impl Lens {
     fn new(raw_lens: &str) -> Self {
-        let label = raw_lens[..2].to_string();
+        let raw_lens = raw_lens.split('=').collect::<Vec<_>>();
+        let label = raw_lens[0].to_string();
         Self {
             label: label.clone(),
-            fl: raw_lens[3..4].parse::<i64>().unwrap(),
+            fl: raw_lens[1].parse::<i64>().unwrap(),
             _box: Self::get_hash(&label),
         }
     }
@@ -36,7 +37,6 @@ enum Instruction {
     Add(Lens),
 }
 
-
 fn main() -> Result<()> {
     let mut file_input = File::open("inputs/d15")?;
     // let mut file_input = File::open("inputs/temp")?;
@@ -44,21 +44,43 @@ fn main() -> Result<()> {
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;
 
+    let mut boxes: Vec<Vec<Lens>> = vec![Vec::new(); 256];
     let codes = input
         .split(',')
         .map(|code| {
-            let label = code[..2].to_string();
-            if &code[2..3] == "=" {
+            if code.contains('=') {
                 let a = Lens::new(code);
                 println!("{:?}", a);
                 Instruction::Add(a)
             } else {
-                Instruction::Remove(label)
+                Instruction::Remove(code[..code.len() - 1].to_string())
             }
         })
         .collect::<Vec<_>>();
-    // let boxes = vec![Vec::<Lens>new(); 256];
-    println!("{:?}", codes);
+    // println!("{:?}", codes);
+    for code in codes {
+        match code {
+            Instruction::Add(lens) => {
+                if let Some(ele) = boxes[lens._box as usize]
+                    .iter_mut()
+                    .find(|ele| *ele.label == lens.label)
+                {
+                    ele.fl = lens.fl
+                } else {
+                    boxes[lens._box as usize].push(lens);
+                }
+            }
+            Instruction::Remove(label) => {
+                boxes[Lens::get_hash(&label) as usize].retain(|ele| ele.label != label)
+            }
+        }
+    }
+    sum = boxes.iter().enumerate().fold(0, |acc, (box_num, _box)| {
+        acc + _box.iter().enumerate().fold(0, |accc, (slot_num, lens)| {
+            println!("{}", (box_num + 1) * (slot_num + 1) * lens.fl as usize);
+            accc + (box_num + 1) * (slot_num + 1) * lens.fl as usize
+        })
+    });
 
     println!("sum: {}", sum);
     Ok(())
