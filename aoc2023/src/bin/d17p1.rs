@@ -5,6 +5,7 @@
 /// Since we only care about reaching the goal in the shortest path
 /// Needed help on this qns
 use std::{
+    cmp::Reverse,
     collections::{BinaryHeap, HashMap, HashSet, VecDeque},
     f64::INFINITY,
     fs::File,
@@ -16,7 +17,7 @@ use std::{
 use itertools::izip;
 use priority_queue::{DoublePriorityQueue, PriorityQueue};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 enum Direction {
     Up,
     Down,
@@ -54,69 +55,57 @@ impl Direction {
     }
 }
 
-fn get_lowest(map: Vec<Vec<u32>>) {
+fn get_lowest(map: Vec<Vec<i64>>) {
     let max_y = map.len();
     let max_x = map[0].len();
-    let mut seen: HashSet<((i64, i64), Direction, i64)> = HashSet::new();
-    let mut q: DoublePriorityQueue<((i64, i64), Direction, i64), i64> = DoublePriorityQueue::new();
-    q.push(((0, 0), Direction::None, 0), 0);
-    while !q.is_empty() {
+    let mut seen: HashSet<(i64, i64, i64, i64, i64)> = HashSet::new();
+    let mut q: BinaryHeap<(Reverse<i64>, i64, i64, i64, i64, i64)> = BinaryHeap::new();
+    q.push((Reverse(0), 0, 0, 0, 0, 0));
+    while let Some(item) = q.pop() {
         // println!("{:?}", q);
-        // if q.len() > 10 {
-        //     break;
-        // }
-        let (((y, x), direction, straight), heat) = q.pop_min().unwrap();
-        if y as usize == max_y - 1 && x as usize == max_x - 1 && straight < 3 {
-            // println!("seen: {:?}", seen);
+        let (Reverse(heat), y, x, dy, dx, n) = item;
+        if y == max_y as i64 - 1 && x == max_x as i64 - 1{
             println!("heat: {}", heat);
             break;
         }
-        if seen.contains(&((y, x), direction.clone(), straight)) {
+        if seen.contains(&(y, x, dy, dx, n)) {
             continue;
         }
-        seen.insert(((y, x), direction.clone(), straight));
-        // Handling case where you can continue in the same direction
-        for possible_direction in [
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ] {
-            let (cy, cx) = possible_direction.get_new_index();
-            let (ny, nx) = (y + cy, x + cx);
-            if ny < 0
-                || ny as usize >= max_y
-                || nx < 0
-                || nx as usize >= max_x
-                || direction.is_opposite(&possible_direction)
-            {
-                // Skip if OOB or opposite direction, cannot go backwards
-                continue;
+        seen.insert((y, x, dy, dx, n));
+        if (dy, dx) != (0, 0) && n < 3 {
+            let (ny, nx) = (y + dy, x + dx);
+            if 0 <= ny && ny < max_y as i64 && 0 <= nx && nx < max_x as i64 {
+                q.push((
+                    Reverse(heat + map[ny as usize][nx as usize]),
+                    ny,
+                    nx,
+                    dy,
+                    dx,
+                    n + 1,
+                ));
             }
-            // println!("({}, {}), direction: {:?}", ny, nx, possible_direction);
-            if possible_direction == direction {
-                // If you are going straight, try and continue going straight
-                if straight < 3 {
-                    // Was stuck here, because I assumed the push would override/add a new entry into the queue
-                    q.push_decrease(
-                        ((ny, nx), possible_direction.clone(), straight + 1),
-                        heat + map[ny as usize][nx as usize] as i64,
-                    );
+        }
+        for possible_direction in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
+            if possible_direction != (dy, dx) && possible_direction != (-dy, -dx) {
+                let (ny, nx) = (y + possible_direction.0, x + possible_direction.1);
+                if 0 <= ny && ny < max_y as i64 && 0 <= nx && nx < max_x as i64 {
+                    q.push((
+                        Reverse(heat + map[ny as usize][nx as usize]),
+                        ny,
+                        nx,
+                        possible_direction.0,
+                        possible_direction.1,
+                        1,
+                    ));
                 }
-            } else {
-                // Other Direction
-                q.push_decrease(
-                    ((ny, nx), possible_direction.clone(), 1),
-                    heat + map[ny as usize][nx as usize] as i64,
-                );
             }
         }
     }
 }
 
 fn main() -> Result<()> {
-    // let mut file_input = File::open("inputs/d17")?;
-    let mut file_input = File::open("inputs/temp")?;
+    let mut file_input = File::open("inputs/d17")?;
+    // let mut file_input = File::open("inputs/temp")?;
     let mut input = String::new();
     file_input.read_to_string(&mut input)?;
     let mut sum = 0;
@@ -124,7 +113,7 @@ fn main() -> Result<()> {
         .split('\n')
         .map(|row| {
             row.chars()
-                .map(|c| c.to_digit(10).unwrap())
+                .map(|c| c.to_digit(10).unwrap() as i64)
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
