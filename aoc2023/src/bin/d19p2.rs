@@ -150,71 +150,67 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
     let first_instruction = "in";
     fn get_all_possible_parts(
+        current_instruction: &PossibleInstruction,
         current_index: i64,
         instruction_set: String,
         instructions: &HashMap<String, Vec<PossibleInstruction>>,
         part: HashMap<PartCategory, Part>,
-        acc: HashSet<Vec<Part>>,
-    ) -> HashSet<Vec<Part>> {
-        let current_instruction = &instructions[&instruction_set][current_index as usize];
-        let mut acc = acc;
+    ) -> i64 {
         match current_instruction {
             PossibleInstruction::Instruction(instruction) => {
                 // Assuming Less is the ordering, part_1 follows the rule, while part_2 goes onto the next instruction
                 let mut part_1 = part.clone();
-                part_1.get_mut(&instruction.category).unwrap().max = instruction.amount - 1;
                 let mut part_2 = part.clone();
-                part_2.get_mut(&instruction.category).unwrap().min = instruction.amount + 1;
                 if instruction.condition == Ordering::Greater {
                     // Swap them
-                    (part_2, part_1) = (part_1, part_2);
+                    part_1.get_mut(&instruction.category).unwrap().min = part_1[&instruction.category].min.max(instruction.amount + 1);
+                    part_2.get_mut(&instruction.category).unwrap().max = part_2[&instruction.category].max.min(instruction.amount);
+                } else {
+                    part_1.get_mut(&instruction.category).unwrap().max = part_1[&instruction.category].max.min(instruction.amount - 1);
+                    part_2.get_mut(&instruction.category).unwrap().min = part_1[&instruction.category].min.max(instruction.amount);
                 }
-                let mut possible_parts: HashSet<Vec<Part>> = HashSet::new();
-                if part_1.iter().all(|(_, part)| part.min < part.max) {
-                    let outcome = match &instruction.rule {
-                        Rule::Accepted => HashSet::from([part_1
-                            .into_iter()
-                            .map(|part| part.1)
-                            .collect::<Vec<_>>()]),
-                        Rule::Rejected => HashSet::new(),
-                        Rule::GoTo(new_instruction) => get_all_possible_parts(
-                            0,
-                            new_instruction.to_string(),
-                            instructions,
-                            part_1,
-                            acc.clone(),
-                        ),
-                    };
-                    possible_parts.extend(outcome);
+                let mut acc = 0;
+                if part_1.iter().all(|(_, part)| part.min <= part.max) {
+                    acc += get_all_possible_parts(
+                        &PossibleInstruction::Rule(instruction.rule.clone()),
+                        current_index,
+                        instruction_set.clone(),
+                        instructions,
+                        part_1,
+                    );
                 }
-                if part_2.iter().all(|(_, part)| part.min < part.max) {
-                    possible_parts.extend(get_all_possible_parts(
+                if part_2.iter().all(|(_, part)| part.min <= part.max) {
+                    let insturction_set_instructions = &instructions[&instruction_set];
+                    acc += get_all_possible_parts(
+                        &insturction_set_instructions[current_index as usize + 1],
                         current_index + 1,
                         instruction_set,
                         instructions,
-                        part,
-                        acc.clone(),
-                    ));
+                        part_2,
+                    );
                 }
-                acc.extend(possible_parts);
                 acc
             }
             PossibleInstruction::Rule(rule) => match rule {
-                Rule::Accepted => {
-                    acc.extend(HashSet::from([part
-                        .into_iter()
-                        .map(|part| part.1)
-                        .collect::<Vec<_>>()]));
-                    acc
-                }
-                Rule::Rejected => HashSet::new(),
+                Rule::Accepted => part
+                    .values()
+                    .fold(1, |acc, part| acc * (part.max - part.min + 1)),
+                Rule::Rejected => 0,
                 Rule::GoTo(new_instruction) => {
-                    get_all_possible_parts(0, new_instruction.to_string(), instructions, part, acc)
+                    let new_instruction_set = &instructions[new_instruction];
+                    get_all_possible_parts(
+                        &new_instruction_set[0],
+                        0,
+                        new_instruction.to_string(),
+                        instructions,
+                        part,
+                    )
                 }
             },
         }
     }
     let mut possible_parts = get_all_possible_parts(
+        &instructions[&String::from("in")][0],
         0,
         String::from("in"),
         &instructions,
@@ -224,7 +220,6 @@ fn main() -> Result<()> {
             (PartCategory::S, Part { min: 1, max: 4000 }),
             (PartCategory::X, Part { min: 1, max: 4000 }),
         ]),
-        HashSet::new(),
     );
     println!("{:?}", possible_parts);
     // let possible_parts = possible_parts.into_iter().reduce(|acc, parts| {
@@ -232,11 +227,6 @@ fn main() -> Result<()> {
     //         .map(|(acc_part, part)| acc_part.extend(&part))
     //         .collect::<Vec<_>>()
     // });
-    sum = possible_parts.iter().fold(0, |acc, possible_part| {
-        acc + possible_part
-            .iter()
-            .fold(1, |accc, part| accc * (part.max - part.min + 1))
-    });
     // sum = possible_parts.len();
 
     println!("sum: {}", sum);
