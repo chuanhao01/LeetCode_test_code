@@ -72,33 +72,50 @@ fn main() -> Result<()> {
             }
         }
     }
+    let mut within_offsets: HashMap<(i64, i64), HashSet<(i64, i64)>> = HashMap::new();
     // Find all locations he can start from
-    while cur_step < 100 {
+    while cur_step < 500 {
         let mut next_steps: HashSet<(i64, i64)> = HashSet::new();
         for steps in &steps_q {
             let (y, x) = steps;
-            for possible_direction in [
-                Direction::Up,
-                Direction::Down,
-                Direction::Left,
-                Direction::Right,
-            ] {
-                let (cy, cx) = possible_direction.get_new_index();
-                let (ny, nx) = (y + cy, x + cx);
-                // println!("{}, {}", (((ny % max_y as i64) + max_y as i64) % max_y as i64) as usize, (((nx % max_x as i64) + max_x as i64) % max_x as i64) as usize);
-                if let MapItem::Rock = map
-                    [(((ny % max_y as i64) + max_y as i64) % max_y as i64) as usize]
-                    [(((nx % max_x as i64) + max_x as i64) % max_x as i64) as usize]
-                {
-                    continue;
+            let (within_y, within_x) = (
+                ((y % max_y as i64) + max_y as i64) % max_y as i64,
+                ((x % max_x as i64) + max_x as i64) % max_x as i64,
+            );
+            if let Some(offsets) = within_offsets.get(&(within_y, within_x)) {
+                next_steps.extend(
+                    offsets
+                        .clone()
+                        .iter()
+                        .map(|offset| (y + offset.0, x + offset.1)),
+                );
+            } else {
+                let mut offsets: HashSet<(i64, i64)> = HashSet::new();
+                for possible_direction in [
+                    Direction::Up,
+                    Direction::Down,
+                    Direction::Left,
+                    Direction::Right,
+                ] {
+                    let (cy, cx) = possible_direction.get_new_index();
+                    let (ny, nx) = (y + cy, x + cx);
+                    if let MapItem::Rock = map
+                        [(((ny % max_y as i64) + max_y as i64) % max_y as i64) as usize]
+                        [(((nx % max_x as i64) + max_x as i64) % max_x as i64) as usize]
+                    {
+                        continue;
+                    }
+                    offsets.insert((cy, cx));
+                    next_steps.insert((ny, nx));
                 }
-                next_steps.insert((ny, nx));
+                within_offsets.insert((within_y, within_x), offsets);
             }
         }
         println!("{:?}", steps_q.len());
         steps_q = next_steps;
         cur_step += 1;
     }
+    println!("{:?}", steps_q.len());
 
     println!("sum: {}", sum);
     Ok(())
