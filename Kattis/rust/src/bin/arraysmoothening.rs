@@ -30,7 +30,6 @@ fn main() {
     }
     // TODO: optimize/find a way to directly calculate
     // Larger than N
-    let min_max = 300000;
     let mut values = counts.into_values().collect::<Vec<u64>>();
     for _ in 0..k {
         values.sort();
