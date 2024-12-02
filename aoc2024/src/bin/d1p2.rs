@@ -1,39 +1,35 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{Read, Result},
 };
 
 fn main() -> Result<()> {
     let mut file_input = File::open("inputs/d1")?;
-    // let mut file_input = File::open("inputs/temp")?;
     let mut input = String::new();
     file_input.read_to_string(&mut input)?;
 
     let mut sum = 0;
-
-    input = input.replace("one", "o1e");
-    input = input.replace("two", "t2o");
-    input = input.replace("three", "t3e");
-    input = input.replace("four", "f4r");
-    input = input.replace("five", "f5e");
-    input = input.replace("six", "s6x");
-    input = input.replace("seven", "s7n");
-    input = input.replace("eight", "e8t");
-    input = input.replace("nine", "n9e");
+    let mut left_v: HashMap<i32, i32> = HashMap::new();
+    let mut right_v: HashMap<i32, i32> = HashMap::new();
     for l in input.split('\n') {
-        let mut digits: Vec<char> = Vec::new();
-
-        let l = l.to_string();
-        for c in l.chars() {
-            if c.is_ascii_digit() {
-                digits.push(c);
-            }
-        }
-        // println!("{}{}", digits.first().unwrap(), digits.last().unwrap());
-        sum += format!("{}{}", digits.first().unwrap(), digits.last().unwrap())
-            .parse::<i64>()
-            .unwrap();
+        let nums = l.split("   ").collect::<Vec<&str>>();
+        left_v
+            .entry(nums[0].parse().unwrap())
+            .and_modify(|v| *v += 1)
+            .or_insert(1);
+        right_v
+            .entry(nums[1].parse().unwrap())
+            .and_modify(|v| *v += 1)
+            .or_insert(1);
     }
+
+    for k in left_v.keys() {
+        if let Some(v) = right_v.get(k) {
+            sum += k * left_v[k] * v;
+        }
+    }
+
     println!("sum: {}", sum);
     Ok(())
 }
