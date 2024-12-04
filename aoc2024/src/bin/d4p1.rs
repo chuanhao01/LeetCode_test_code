@@ -1,6 +1,5 @@
 // start 2125
-// done
-use regex::Regex;
+// done 2215
 use std::{
     fs::File,
     io::{Read, Result},
@@ -26,11 +25,9 @@ fn main() -> Result<()> {
         let line = l.chars().collect();
         map.push(line);
     }
-    // println!("{:?}", map);
     for y in 0..map.len() {
         for x in 0..map[0].len() {
             sum += dfs(&map, (y, x), None, 'X');
-            // println!("{}, {}: {}, {}", y, x, map[y][x], sum);
         }
     }
 
