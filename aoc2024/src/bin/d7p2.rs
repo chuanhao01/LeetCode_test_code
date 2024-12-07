@@ -1,5 +1,5 @@
-// start 2125
-// end 2145
+// start 2145
+// end 2147
 
 use std::{
     collections::{HashMap, HashSet},
@@ -26,8 +26,6 @@ fn main() -> Result<()> {
             .split(" ")
             .map(|num| num.parse().unwrap())
             .collect();
-        // println!("{}", check);
-        // println!("{:?}", nums);
         let mut possible: Vec<i64> = Vec::from([nums.remove(0)]);
         for num in nums {
             let mut new_possible = possible.clone();
@@ -36,6 +34,9 @@ fn main() -> Result<()> {
             }
             for i in 0..possible.len() {
                 new_possible.push(possible[i] * num);
+            }
+            for i in 0..possible.len() {
+                new_possible.push(format!("{}{}", possible[i], num).parse().unwrap());
             }
             possible = new_possible;
         }
