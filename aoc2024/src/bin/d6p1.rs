@@ -1,5 +1,5 @@
 // start 2345
-// end
+// end 0000
 
 use std::{
     collections::{HashMap, HashSet},
@@ -58,14 +58,17 @@ fn main() -> Result<()> {
 
         if map[ny as usize][nx as usize] == '#' {
             cur = direction.next().unwrap();
-            ny = y + cur.0;
-            nx = x + cur.1;
-            if ny < 0 || ny >= map.len() as i32 {
-                break;
-            }
-            if nx < 0 || nx >= map[0].len() as i32 {
-                break;
-            }
+            ny = y;
+            nx = x;
+
+            // ny = y + cur.0;
+            // nx = x + cur.1;
+            // if ny < 0 || ny >= map.len() as i32 {
+            //     break;
+            // }
+            // if nx < 0 || nx >= map[0].len() as i32 {
+            //     break;
+            // }
         }
 
         y = ny;
