@@ -11,6 +11,8 @@ use itertools::Itertools;
 use queue::*;
 
 // NOTES:
+// Too many checks
+// Can't be bothered to optimize further
 fn main() -> Result<()> {
     // let mut file_input = File::open("inputs/temp")?;
     let mut file_input = File::open("inputs/d12")?;
